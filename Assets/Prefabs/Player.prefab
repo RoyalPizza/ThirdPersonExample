@@ -220,6 +220,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerArmature
       objectReference: {fileID: 0}
+    - target: {fileID: 4416926081852918490, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: NetObject
+      value: 
+      objectReference: {fileID: 3631942698389594813}
+    - target: {fileID: 4416926081852918493, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_AddedGameObjects: []
   m_SourcePrefab: {fileID: 100100000, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
@@ -261,6 +269,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Animator: {fileID: 1543015224303553020}
+--- !u!114 &2343576840985068780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5242779664336783676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 218330db3606ea348882c637349b4ba6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NetObject: {fileID: 3631942698389594813}
+  Renderer: {fileID: 4045072376418238664}
 --- !u!114 &6766784414673827191
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -287,20 +309,6 @@ MonoBehaviour:
   ScaleThreshold: 0.01
   InLocalSpace: 0
   Interpolate: 1
---- !u!114 &2343576840985068780
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5242779664336783676}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 218330db3606ea348882c637349b4ba6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  NetObject: {fileID: 3631942698389594813}
-  Renderer: {fileID: 4045072376418238664}
 --- !u!1001 &8470719551697507436
 PrefabInstance:
   m_ObjectHideFlags: 0

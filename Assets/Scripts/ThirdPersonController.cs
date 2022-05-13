@@ -95,7 +95,8 @@ namespace StarterAssets
 
 		private bool IsCurrentDeviceMouse => _playerInput.currentControlScheme == "KeyboardMouse";
 
-		NetworkObject NetObject;
+		[SerializeField]
+		private NetworkObject NetObject;
 
 		private void Awake()
 		{
@@ -105,7 +106,6 @@ namespace StarterAssets
 				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
 			}
 
-			NetObject = transform.parent.GetComponent<NetworkObject>();
 		}
 
 		private void Start()
@@ -120,6 +120,17 @@ namespace StarterAssets
 			// reset our timeouts on start
 			_jumpTimeoutDelta = JumpTimeout;
 			_fallTimeoutDelta = FallTimeout;
+
+			if (NetObject.IsOwner == false)
+            {
+				gameObject.GetComponent<PlayerInput>().enabled = false;
+				gameObject.GetComponent<CharacterController>().enabled = false;
+            }
+			else
+            {
+				gameObject.GetComponent<PlayerInput>().enabled = true;
+				gameObject.GetComponent<CharacterController>().enabled = true;
+			}
 		}
 
 		private void Update()
@@ -233,6 +244,8 @@ namespace StarterAssets
 
 
 			Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+
+			Debug.Log("Move: " + targetDirection);
 
 			// move the player
 			_controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
