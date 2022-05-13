@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
@@ -94,6 +95,8 @@ namespace StarterAssets
 
 		private bool IsCurrentDeviceMouse => _playerInput.currentControlScheme == "KeyboardMouse";
 
+		NetworkObject NetObject;
+
 		private void Awake()
 		{
 			// get a reference to our main camera
@@ -101,6 +104,8 @@ namespace StarterAssets
 			{
 				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
 			}
+
+			NetObject = transform.parent.GetComponent<NetworkObject>();
 		}
 
 		private void Start()
@@ -121,14 +126,20 @@ namespace StarterAssets
 		{
 			_hasAnimator = TryGetComponent(out _animator);
 			
-			JumpAndGravity();
-			GroundedCheck();
-			Move();
+			if (NetObject.IsOwner)
+            {
+				JumpAndGravity();
+				GroundedCheck();
+				Move();
+			}
 		}
 
 		private void LateUpdate()
 		{
-			CameraRotation();
+			if (NetObject.IsOwner)
+            {
+				CameraRotation();
+			}
 		}
 
 		private void AssignAnimationIDs()
