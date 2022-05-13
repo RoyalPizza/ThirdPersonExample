@@ -283,7 +283,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NetObject: {fileID: 3631942698389594813}
   Renderer: {fileID: 4045072376418238664}
---- !u!114 &6766784414673827191
+--- !u!114 &8166162327929284417
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -292,7 +292,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5242779664336783676}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: 31c1394c0bc16cb4d9e81311edaedac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   SyncPositionX: 1
