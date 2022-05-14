@@ -68,7 +68,8 @@ public class GameMaster : MonoBehaviour
             if (NetworkManager.Singleton.IsServer)
             {
                 Debug.Log("Unloading Scene");
-                SceneManager.UnloadSceneAsync("Playground");
+                //NetworkManager.Singleton.SceneManager.UnloadScene("Playground");
+                //SceneManager.UnloadSceneAsync("Playground");
                 StartCamera.gameObject.SetActive(true);
             }
         }
@@ -82,7 +83,8 @@ public class GameMaster : MonoBehaviour
             if (NetworkManager.Singleton.IsServer)
             {
                 Debug.Log("Loading Scene");
-                SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
+                NetworkManager.Singleton.SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
+                //SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
             }
         }
     }
