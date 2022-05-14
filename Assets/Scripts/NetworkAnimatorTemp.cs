@@ -45,7 +45,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
     }
 
     private bool m_SendMessagesAllowed = false;
-    private bool m_writtenOnce = false;
+    private bool m_WrittenOnce = false;
 
     // Animators only support up to 32 params
     private const int k_MaxAnimationParams = 32;
@@ -82,9 +82,10 @@ public class NetworkAnimatorTemp : NetworkAnimator
 
     private void Update()
     {
-        if (m_writtenOnce == false && NetworkManager.Singleton.IsConnectedClient && NetworkManager.Singleton.IsClient)
+        if (m_WrittenOnce == false && NetworkManager.Singleton.IsConnectedClient && NetworkManager.Singleton.IsClient)
         {
             ForceSendValuesServerRpc();
+            m_WrittenOnce = true;
         }
     }
 
@@ -243,11 +244,6 @@ public class NetworkAnimatorTemp : NetworkAnimator
     [ServerRpc]
     private void ForceSendValuesServerRpc()
     {
-        if (!m_SendMessagesAllowed || !Animator || !Animator.enabled)
-        {
-            return;
-        }
-
         for (int layer = 0; layer < Animator.layerCount; layer++)
         {
             int stateHash;
