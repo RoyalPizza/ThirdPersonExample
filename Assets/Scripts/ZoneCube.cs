@@ -5,21 +5,27 @@ using UnityEngine;
 
 public class ZoneCube : NetworkBehaviour
 {
-    public NetworkVariable<int> PlayersInZone = new NetworkVariable<int>();
+    private NetworkVariable<int> PlayersInZoneTempName = new NetworkVariable<int>();
     public Animator TorchAnimator;
 
     private void Start()
     {
         Debug.Log("Zone Start: " + NetworkManager.Singleton.IsServer.ToString());
         //PlayersInZone.Value = 0;
-        PlayersInZone.OnValueChanged = OnPlayersInZoneChanged;
-        PlayersInZone.OnValueChanged = OnPlayersInZoneChanged;
+        PlayersInZoneTempName.OnValueChanged = OnPlayersInZoneChanged;
+        PlayersInZoneTempName.OnValueChanged = OnPlayersInZoneChanged;
+    }
+
+    private void Update()
+    {
+        StyleCube();
+        UpdateText();
     }
 
     public void OnPlayersInZoneChanged(int previous, int current)
     {
-        StyleCube();
-        UpdateText();
+        //StyleCube();
+        //UpdateText();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -29,7 +35,7 @@ public class ZoneCube : NetworkBehaviour
         {
             TorchAnimator.SetBool("Lit", true);
             //TorchAnimator.Play("TorchLit");
-            PlayersInZone.Value += 1;
+            PlayersInZoneTempName.Value += 1;
         }
     }
 
@@ -39,9 +45,9 @@ public class ZoneCube : NetworkBehaviour
 
         if (NetworkManager.Singleton.IsServer)
         {
-            PlayersInZone.Value -= 1;
+            PlayersInZoneTempName.Value -= 1;
 
-            if (PlayersInZone.Value == 0)
+            if (PlayersInZoneTempName.Value == 0)
             {
                 TorchAnimator.SetBool("Lit", false);
                 //TorchAnimator.Play("TorchUnlit");
@@ -53,7 +59,7 @@ public class ZoneCube : NetworkBehaviour
     {
         var targetColor = Color.red;
 
-        if (PlayersInZone.Value > 0)
+        if (PlayersInZoneTempName.Value > 0)
             targetColor = Color.green;
 
         targetColor.a = .5f;
@@ -63,6 +69,6 @@ public class ZoneCube : NetworkBehaviour
 
     private void UpdateText()
     {
-        transform.GetChild(0).GetComponent<TextMesh>().text = PlayersInZone.Value.ToString();
+        transform.GetChild(0).GetComponent<TextMesh>().text = PlayersInZoneTempName.Value.ToString();
     }
 }
