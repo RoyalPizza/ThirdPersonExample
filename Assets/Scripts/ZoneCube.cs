@@ -6,6 +6,7 @@ using UnityEngine;
 public class ZoneCube : NetworkBehaviour
 {
     public NetworkVariable<int> PlayersInZone = new NetworkVariable<int>();
+    public Animator TorchAnimator;
 
     private void Start()
     {
@@ -36,7 +37,7 @@ public class ZoneCube : NetworkBehaviour
 
         if (NetworkManager.Singleton.IsServer)
         {
-            
+            TorchAnimator.SetBool("Lit", true);
             PlayersInZone.Value += 1;
         }
     }
@@ -46,6 +47,9 @@ public class ZoneCube : NetworkBehaviour
         if (NetworkManager.Singleton.IsServer)
         {
             PlayersInZone.Value -= 1;
+
+            if (PlayersInZone.Value == 0)
+                TorchAnimator.SetBool("Lit", false);
         }
     }
 
