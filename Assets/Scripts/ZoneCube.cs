@@ -37,8 +37,9 @@ public class ZoneCube : NetworkBehaviour
 
         if (NetworkManager.Singleton.IsServer)
         {
-            //TorchAnimator.SetBool("Lit", true);
             TorchAnimator.Play("TorchLit");
+            //TorchAnimator.SetBool("Lit", true);
+
             PlayersInZone.Value += 1;
         }
     }
@@ -50,8 +51,10 @@ public class ZoneCube : NetworkBehaviour
             PlayersInZone.Value -= 1;
 
             if (PlayersInZone.Value == 0)
-                TorchAnimator.Play("TorchUnlit");
-                //TorchAnimator.SetBool("Lit", false);
+            {
+                TorchAnimator.SetBool("Lit", false);
+                //TorchAnimator.Play("TorchUnlit");
+            }
         }
     }
 
