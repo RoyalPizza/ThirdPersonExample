@@ -83,7 +83,7 @@ public class GameMaster : MonoBehaviour
             if (NetworkManager.Singleton.IsServer)
             {
                 Debug.Log("Loading Scene");
-                NetworkManager.Singleton.SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
+                //NetworkManager.Singleton.SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
                 //SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
             }
         }

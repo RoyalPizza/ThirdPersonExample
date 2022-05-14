@@ -18,14 +18,14 @@ public class ZoneCube : NetworkBehaviour
 
     private void Update()
     {
-        //StyleCube();
-        //UpdateText();
+        StyleCube();
+        UpdateText();
     }
 
     public void OnPlayersInZoneChanged(int previous, int current)
     {
-        StyleCube();
-        UpdateText();
+        //StyleCube();
+        //UpdateText();
     }
 
     private void OnTriggerEnter(Collider other)
