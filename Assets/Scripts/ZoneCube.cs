@@ -32,7 +32,7 @@ public class ZoneCube : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("On Trigger Enter: " + other.name);
+        Debug.Log("On Trigger Enter: " + NetworkManager.Singleton.IsServer);
 
 
         if (NetworkManager.Singleton.IsServer)
@@ -46,6 +46,9 @@ public class ZoneCube : NetworkBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        Debug.Log("On Trigger Exit: " + NetworkManager.Singleton.IsServer);
+
+
         if (NetworkManager.Singleton.IsServer)
         {
             PlayersInZone.Value -= 1;

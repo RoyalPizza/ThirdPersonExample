@@ -63,13 +63,19 @@ public class GameMaster : MonoBehaviour
     private void Singleton_OnClientDisconnectCallback(ulong obj)
     {
         Debug.Log("Client Disconnected");
-        SceneManager.UnloadSceneAsync("Playground");
-        StartCamera.gameObject.SetActive(true);
+        if (NetworkManager.Singleton.LocalClient.PlayerObject.OwnerClientId == obj)
+        {
+            SceneManager.UnloadSceneAsync("Playground");
+            StartCamera.gameObject.SetActive(true);
+        }
     }
 
     private void Singleton_OnClientConnectedCallback(ulong obj)
     {
         Debug.Log("Client Connected");
-        SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
+        if (NetworkManager.Singleton.LocalClient.PlayerObject.OwnerClientId == obj)
+        {
+            SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
+        }
     }
 }
