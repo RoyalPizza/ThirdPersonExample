@@ -13,8 +13,6 @@ public class ColorIfOwner : MonoBehaviour
 
     void Start()
     {
-        Debug.Log($"{gameObject.name} {NetObject.IsOwner}");
-
         if (NetObject.IsOwner)
         {
             Renderer.material.color = Color.green;

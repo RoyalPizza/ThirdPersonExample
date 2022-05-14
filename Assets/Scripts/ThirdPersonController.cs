@@ -136,8 +136,8 @@ namespace StarterAssets
 		private void Update()
 		{
 			_hasAnimator = TryGetComponent(out _animator);
-			
-			if (NetObject.IsOwner)
+
+            if (NetObject.IsOwner)
             {
 				JumpAndGravity();
 				GroundedCheck();
@@ -244,8 +244,6 @@ namespace StarterAssets
 
 
 			Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-
-			Debug.Log("Move: " + targetDirection);
 
 			// move the player
 			_controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
