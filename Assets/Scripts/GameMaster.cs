@@ -1,6 +1,7 @@
 
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameMaster : MonoBehaviour
 {
@@ -51,5 +52,24 @@ public class GameMaster : MonoBehaviour
         GUILayout.Label("Transport: " +
             NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetType().Name);
         GUILayout.Label("Mode: " + mode);
+    }
+
+    private void Start()
+    {
+        NetworkManager.Singleton.OnClientConnectedCallback += Singleton_OnClientConnectedCallback;
+        NetworkManager.Singleton.OnClientDisconnectCallback += Singleton_OnClientDisconnectCallback;
+    }
+
+    private void Singleton_OnClientDisconnectCallback(ulong obj)
+    {
+        Debug.Log("Client Disconnected");
+        SceneManager.UnloadSceneAsync("Playground");
+        StartCamera.gameObject.SetActive(true);
+    }
+
+    private void Singleton_OnClientConnectedCallback(ulong obj)
+    {
+        Debug.Log("Client Connected");
+        SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
     }
 }
