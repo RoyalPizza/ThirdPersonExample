@@ -65,7 +65,7 @@ public class GameMaster : MonoBehaviour
         Debug.Log("Client Disconnected: " + obj);
         if (NetworkManager.Singleton.LocalClient.PlayerObject.OwnerClientId == obj)
         {
-            Debug.Log("Loading Scene");
+            Debug.Log("Unloading Scene");
             SceneManager.UnloadSceneAsync("Playground");
             StartCamera.gameObject.SetActive(true);
         }
