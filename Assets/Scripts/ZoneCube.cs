@@ -11,7 +11,7 @@ public class ZoneCube : NetworkBehaviour
 
     private void Start()
     {
-        Debug.Log("Zone Start: " + NetworkManager.Singleton.IsServer.ToString());
+        //Debug.Log("Zone Start: " + NetworkManager.Singleton.IsServer.ToString());
         //PlayersInZone.Value = 0;
         PlayersInZoneTempName.OnValueChanged = OnPlayersInZoneChanged;
         PlayersInZoneTempName.OnValueChanged = OnPlayersInZoneChanged;

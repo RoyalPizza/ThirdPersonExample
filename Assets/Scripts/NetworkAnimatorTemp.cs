@@ -84,6 +84,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
     {
         if (m_WrittenOnce == false && NetworkManager.Singleton.IsConnectedClient && NetworkManager.Singleton.IsClient)
         {
+            Debug.Log("Forcing New Animation Values");
             ForceSendValuesServerRpc();
             m_WrittenOnce = true;
         }
