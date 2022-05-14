@@ -10,7 +10,11 @@ public class DisableIfNotOwner : MonoBehaviour
 
     private void Start()
     {
-        if (NetObject.IsOwner == false)
+
+        if (NetworkManager.Singleton.LocalClient.PlayerObject.IsOwner == false)
             this.gameObject.SetActive(false);
+
+        //if (NetObject.IsOwner == false)
+        //    this.gameObject.SetActive(false);
     }
 }
