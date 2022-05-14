@@ -1,17 +1,14 @@
-//#if COM_UNITY_MODULES_ANIMATION
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Netcode;
-using Unity.Netcode.Components;
 using UnityEngine;
-
 
 /// <summary>
 /// NetworkAnimator enables remote synchronization of <see cref="UnityEngine.Animator"/> state for on network objects.
 /// </summary>
 [AddComponentMenu("Netcode/" + nameof(NetworkAnimatorTemp))]
 [RequireComponent(typeof(Animator))]
-public class NetworkAnimatorTemp : NetworkAnimator
+public class NetworkAnimatorTemp : NetworkBehaviour
 {
     internal struct AnimationMessage : INetworkSerializable
     {
@@ -44,8 +41,19 @@ public class NetworkAnimatorTemp : NetworkAnimator
         }
     }
 
-    private bool m_SendMessagesAllowed = false;
+    [SerializeField] private Animator m_Animator;
     private bool m_WrittenOnce = false;
+
+    public Animator Animator
+    {
+        get { return m_Animator; }
+        set
+        {
+            m_Animator = value;
+        }
+    }
+
+    private bool m_SendMessagesAllowed = false;
 
     // Animators only support up to 32 params
     private const int k_MaxAnimationParams = 32;
@@ -80,6 +88,80 @@ public class NetworkAnimatorTemp : NetworkAnimator
         }
     }
 
+    public override void OnDestroy()
+    {
+        if (m_CachedAnimatorParameters.IsCreated)
+        {
+            m_CachedAnimatorParameters.Dispose();
+        }
+
+        m_ParameterWriter.Dispose();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            m_SendMessagesAllowed = true;
+            int layers = m_Animator.layerCount;
+
+            m_TransitionHash = new int[layers];
+            m_AnimationHash = new int[layers];
+            m_LayerWeights = new float[layers];
+        }
+
+        var parameters = m_Animator.parameters;
+        m_CachedAnimatorParameters = new NativeArray<AnimatorParamCache>(parameters.Length, Allocator.Persistent);
+
+        for (var i = 0; i < parameters.Length; i++)
+        {
+            var parameter = parameters[i];
+
+            if (m_Animator.IsParameterControlledByCurve(parameter.nameHash))
+            {
+                // we are ignoring parameters that are controlled by animation curves - syncing the layer
+                //  states indirectly syncs the values that are driven by the animation curves
+                continue;
+            }
+
+            var cacheParam = new AnimatorParamCache
+            {
+                Type = UnsafeUtility.EnumToInt(parameter.type),
+                Hash = parameter.nameHash
+            };
+
+            unsafe
+            {
+                switch (parameter.type)
+                {
+                    case AnimatorControllerParameterType.Float:
+                        var value = m_Animator.GetFloat(cacheParam.Hash);
+                        UnsafeUtility.WriteArrayElement(cacheParam.Value, 0, value);
+                        break;
+                    case AnimatorControllerParameterType.Int:
+                        var valueInt = m_Animator.GetInteger(cacheParam.Hash);
+                        UnsafeUtility.WriteArrayElement(cacheParam.Value, 0, valueInt);
+
+                        break;
+                    case AnimatorControllerParameterType.Bool:
+                        var valueBool = m_Animator.GetBool(cacheParam.Hash);
+                        UnsafeUtility.WriteArrayElement(cacheParam.Value, 0, valueBool);
+                        break;
+                    case AnimatorControllerParameterType.Trigger:
+                    default:
+                        break;
+                }
+            }
+
+            m_CachedAnimatorParameters[i] = cacheParam; 
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        m_SendMessagesAllowed = false;
+    }
+
     private void Update()
     {
         if (m_WrittenOnce == false && NetworkManager.Singleton.IsConnectedClient && NetworkManager.Singleton.IsClient)
@@ -90,22 +172,56 @@ public class NetworkAnimatorTemp : NetworkAnimator
         }
     }
 
+    private void FixedUpdate()
+    {
+        if (!m_SendMessagesAllowed || !m_Animator || !m_Animator.enabled)
+        {
+            return;
+        }
+
+        for (int layer = 0; layer < m_Animator.layerCount; layer++)
+        {
+            int stateHash;
+            float normalizedTime;
+            if (!CheckAnimStateChanged(out stateHash, out normalizedTime, layer))
+            {
+                continue;
+            }
+
+            var animMsg = new AnimationMessage
+            {
+                StateHash = stateHash,
+                NormalizedTime = normalizedTime,
+                Layer = layer,
+                Weight = m_LayerWeights[layer]
+            };
+
+            m_ParameterWriter.Seek(0);
+            m_ParameterWriter.Truncate();
+
+            WriteParameters(m_ParameterWriter);
+            animMsg.Parameters = m_ParameterWriter.ToArray();
+
+            SendAnimStateClientRpc(animMsg);
+        }
+    }
+
     private bool CheckAnimStateChanged(out int stateHash, out float normalizedTime, int layer)
     {
         bool shouldUpdate = false;
         stateHash = 0;
         normalizedTime = 0;
 
-        float layerWeightNow = Animator.GetLayerWeight(layer);
+        float layerWeightNow = m_Animator.GetLayerWeight(layer);
 
         if (!Mathf.Approximately(layerWeightNow, m_LayerWeights[layer]))
         {
             m_LayerWeights[layer] = layerWeightNow;
             shouldUpdate = true;
         }
-        if (Animator.IsInTransition(layer))
+        if (m_Animator.IsInTransition(layer))
         {
-            AnimatorTransitionInfo tt = Animator.GetAnimatorTransitionInfo(layer);
+            AnimatorTransitionInfo tt = m_Animator.GetAnimatorTransitionInfo(layer);
             if (tt.fullPathHash != m_TransitionHash[layer])
             {
                 // first time in this transition for this layer
@@ -116,7 +232,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
         }
         else
         {
-            AnimatorStateInfo st = Animator.GetCurrentAnimatorStateInfo(layer);
+            AnimatorStateInfo st = m_Animator.GetCurrentAnimatorStateInfo(layer);
             if (st.fullPathHash != m_AnimationHash[layer])
             {
                 // first time in this animation state
@@ -150,7 +266,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
 
             if (cacheValue.Type == AnimationParamEnumWrapper.AnimatorControllerParameterInt)
             {
-                var valueInt = Animator.GetInteger(hash);
+                var valueInt = m_Animator.GetInteger(hash);
                 fixed (void* value = cacheValue.Value)
                 {
                     UnsafeUtility.WriteArrayElement(value, 0, valueInt);
@@ -159,7 +275,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
             }
             else if (cacheValue.Type == AnimationParamEnumWrapper.AnimatorControllerParameterBool)
             {
-                var valueBool = Animator.GetBool(hash);
+                var valueBool = m_Animator.GetBool(hash);
                 fixed (void* value = cacheValue.Value)
                 {
                     UnsafeUtility.WriteArrayElement(value, 0, valueBool);
@@ -168,7 +284,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
             }
             else if (cacheValue.Type == AnimationParamEnumWrapper.AnimatorControllerParameterFloat)
             {
-                var valueFloat = Animator.GetFloat(hash);
+                var valueFloat = m_Animator.GetFloat(hash);
                 fixed (void* value = cacheValue.Value)
                 {
 
@@ -189,7 +305,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
             if (cacheValue.Type == AnimationParamEnumWrapper.AnimatorControllerParameterInt)
             {
                 ByteUnpacker.ReadValuePacked(reader, out int newValue);
-                Animator.SetInteger(hash, newValue);
+                m_Animator.SetInteger(hash, newValue);
                 fixed (void* value = cacheValue.Value)
                 {
                     UnsafeUtility.WriteArrayElement(value, 0, newValue);
@@ -198,7 +314,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
             else if (cacheValue.Type == AnimationParamEnumWrapper.AnimatorControllerParameterBool)
             {
                 reader.ReadValueSafe(out bool newBoolValue);
-                Animator.SetBool(hash, newBoolValue);
+                m_Animator.SetBool(hash, newBoolValue);
                 fixed (void* value = cacheValue.Value)
                 {
                     UnsafeUtility.WriteArrayElement(value, 0, newBoolValue);
@@ -207,7 +323,7 @@ public class NetworkAnimatorTemp : NetworkAnimator
             else if (cacheValue.Type == AnimationParamEnumWrapper.AnimatorControllerParameterFloat)
             {
                 reader.ReadValueSafe(out float newFloatValue);
-                Animator.SetFloat(hash, newFloatValue);
+                m_Animator.SetFloat(hash, newFloatValue);
                 fixed (void* value = cacheValue.Value)
                 {
                     UnsafeUtility.WriteArrayElement(value, 0, newFloatValue);
@@ -227,9 +343,9 @@ public class NetworkAnimatorTemp : NetworkAnimator
     {
         if (animSnapshot.StateHash != 0)
         {
-            Animator.Play(animSnapshot.StateHash, animSnapshot.Layer, animSnapshot.NormalizedTime);
+            m_Animator.Play(animSnapshot.StateHash, animSnapshot.Layer, animSnapshot.NormalizedTime);
         }
-        Animator.SetLayerWeight(animSnapshot.Layer, animSnapshot.Weight);
+        m_Animator.SetLayerWeight(animSnapshot.Layer, animSnapshot.Weight);
 
         if (animSnapshot.Parameters != null && animSnapshot.Parameters.Length != 0)
         {
@@ -242,9 +358,88 @@ public class NetworkAnimatorTemp : NetworkAnimator
         }
     }
 
+    /// <summary>
+    /// Internally-called RPC client receiving function to update a trigger when the server wants to forward
+    ///   a trigger for a client to play / reset
+    /// </summary>
+    /// <param name="animSnapshot">the payload containing the trigger data to apply</param>
+    /// <param name="clientRpcParams">unused</param>
+    [ClientRpc]
+    private void SendAnimTriggerClientRpc(AnimationTriggerMessage animSnapshot, ClientRpcParams clientRpcParams = default)
+    {
+        if (animSnapshot.Reset)
+        {
+            m_Animator.ResetTrigger(animSnapshot.Hash);
+        }
+        else
+        {
+            m_Animator.SetTrigger(animSnapshot.Hash);
+        }
+    }
+
+    /// <summary>
+    /// Sets the trigger for the associated animation
+    ///  Note, triggers are special vs other kinds of parameters.  For all the other parameters we watch for changes
+    ///  in FixedUpdate and users can just set them normally off of Animator. But because triggers are transitory
+    ///  and likely to come and go between FixedUpdate calls, we require users to set them here to guarantee us to
+    ///  catch it...then we forward it to the Animator component
+    /// </summary>
+    /// <param name="triggerName">The string name of the trigger to activate</param>
+    public void SetTrigger(string triggerName)
+    {
+        SetTrigger(Animator.StringToHash(triggerName));
+    }
+
+    /// <inheritdoc cref="SetTrigger(string)" />
+    /// <param name="hash">The hash for the trigger to activate</param>
+    /// <param name="reset">If true, resets the trigger</param>
+    public void SetTrigger(int hash, bool reset = false)
+    {
+        var animMsg = new AnimationTriggerMessage();
+        animMsg.Hash = hash;
+        animMsg.Reset = reset;
+
+        if (IsServer)
+        {
+            //  trigger the animation locally on the server...
+            if (reset)
+            {
+                m_Animator.ResetTrigger(hash);
+            }
+            else
+            {
+                m_Animator.SetTrigger(hash);
+            }
+
+            // ...then tell all the clients to do the same
+            SendAnimTriggerClientRpc(animMsg);
+        }
+        else
+        {
+            Debug.LogWarning("Trying to call NetworkAnimator.SetTrigger on a client...ignoring");
+        }
+    }
+
+    /// <summary>
+    /// Resets the trigger for the associated animation.  See <see cref="SetTrigger(string)">SetTrigger</see> for more on how triggers are special
+    /// </summary>
+    /// <param name="triggerName">The string name of the trigger to reset</param>
+    public void ResetTrigger(string triggerName)
+    {
+        ResetTrigger(Animator.StringToHash(triggerName));
+    }
+
+    /// <inheritdoc cref="ResetTrigger(string)" path="summary" />
+    /// <param name="hash">The hash for the trigger to activate</param>
+    public void ResetTrigger(int hash)
+    {
+        SetTrigger(hash, true);
+    }
+
     [ServerRpc]
     private void ForceSendValuesServerRpc()
     {
+        Debug.Log("RPC Seen");
         for (int layer = 0; layer < Animator.layerCount; layer++)
         {
             int stateHash;
@@ -265,8 +460,9 @@ public class NetworkAnimatorTemp : NetworkAnimator
             WriteParameters(m_ParameterWriter);
             animMsg.Parameters = m_ParameterWriter.ToArray();
 
+            //Debug.Log("Sending ANims");
+
             SendAnimStateClientRpc(animMsg);
         }
     }
 }
-//#endif // COM_UNITY_MODULES_ANIMATION
