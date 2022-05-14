@@ -13,13 +13,31 @@ public class ZoneCube : NetworkBehaviour
         PlayersInZone.Value = 0;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        PlayersInZone.OnValueChanged += OnPlayersInZoneChanged;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        PlayersInZone.OnValueChanged -= OnPlayersInZoneChanged;
+    }
+
+    public void OnPlayersInZoneChanged(int previous, int current)
+    {
+        StyleCube();
+        UpdateText();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("On Trigger Enter: " + other.name);
+
+
         if (NetworkManager.Singleton.IsServer)
         {
+            
             PlayersInZone.Value += 1;
-            StyleCube();
-            UpdateText();
         }
     }
 
@@ -28,8 +46,6 @@ public class ZoneCube : NetworkBehaviour
         if (NetworkManager.Singleton.IsServer)
         {
             PlayersInZone.Value -= 1;
-            StyleCube();
-            UpdateText();
         }
     }
 
