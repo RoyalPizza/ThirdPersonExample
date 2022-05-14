@@ -34,8 +34,8 @@ public class ZoneCube : NetworkBehaviour
         Debug.Log("On Trigger Enter: " + NetworkManager.Singleton.IsServer);
         if (NetworkManager.Singleton.IsServer)
         {
-            TorchAnimator.gameObject.GetComponent<NetworkAnimator>().Animator.SetBool("Lit", true);
-            //TorchAnimator.SetBool("Lit", true);
+            //TorchAnimator.gameObject.GetComponent<NetworkAnimator>().Animator.SetBool("Lit", true);
+            TorchAnimator.SetBool("Lit", true);
             //TorchAnimator.Play("TorchLit");
             PlayersInZoneTempName.Value += 1;
         }
@@ -51,7 +51,7 @@ public class ZoneCube : NetworkBehaviour
 
             if (PlayersInZoneTempName.Value == 0)
             {
-                TorchAnimator.gameObject.GetComponent<NetworkAnimator>().Animator.SetBool("Lit", false);
+                //TorchAnimator.gameObject.GetComponent<NetworkAnimator>().Animator.SetBool("Lit", false);
                 TorchAnimator.SetBool("Lit", false);
                 //TorchAnimator.Play("TorchUnlit");
             }
