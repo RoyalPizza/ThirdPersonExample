@@ -11,17 +11,9 @@ public class ZoneCube : NetworkBehaviour
     private void Start()
     {
         Debug.Log("Zone Start: " + NetworkManager.Singleton.IsServer.ToString());
-        PlayersInZone.Value = 0;
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        PlayersInZone.OnValueChanged += OnPlayersInZoneChanged;
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        PlayersInZone.OnValueChanged -= OnPlayersInZoneChanged;
+        //PlayersInZone.Value = 0;
+        PlayersInZone.OnValueChanged = OnPlayersInZoneChanged;
+        PlayersInZone.OnValueChanged = OnPlayersInZoneChanged;
     }
 
     public void OnPlayersInZoneChanged(int previous, int current)
@@ -33,13 +25,10 @@ public class ZoneCube : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log("On Trigger Enter: " + NetworkManager.Singleton.IsServer);
-
-
         if (NetworkManager.Singleton.IsServer)
         {
             TorchAnimator.SetBool("Lit", true);
             //TorchAnimator.Play("TorchLit");
-
             PlayersInZone.Value += 1;
         }
     }
@@ -47,7 +36,6 @@ public class ZoneCube : NetworkBehaviour
     private void OnTriggerExit(Collider other)
     {
         Debug.Log("On Trigger Exit: " + NetworkManager.Singleton.IsServer);
-
 
         if (NetworkManager.Singleton.IsServer)
         {
@@ -64,7 +52,7 @@ public class ZoneCube : NetworkBehaviour
     private void StyleCube()
     {
         var targetColor = Color.red;
-        
+
         if (PlayersInZone.Value > 0)
             targetColor = Color.green;
 

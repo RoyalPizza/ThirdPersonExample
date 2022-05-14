@@ -29,19 +29,19 @@ public class GameMaster : MonoBehaviour
             NetworkManager.Singleton.StartHost();
             StartCamera.gameObject.SetActive(false);
         }
-            
+
         if (GUILayout.Button("Client"))
         {
             NetworkManager.Singleton.StartClient();
             StartCamera.gameObject.SetActive(false);
         }
-            
+
         if (GUILayout.Button("Server"))
         {
             NetworkManager.Singleton.StartServer();
             StartCamera.gameObject.SetActive(false);
         }
-            
+
     }
 
     void StatusLabels()
