@@ -436,7 +436,7 @@ public class NetworkAnimatorTemp : NetworkBehaviour
         SetTrigger(hash, true);
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void ForceSendValuesServerRpc()
     {
         Debug.Log("RPC Seen");
