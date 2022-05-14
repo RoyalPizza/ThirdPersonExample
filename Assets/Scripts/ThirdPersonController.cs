@@ -124,12 +124,12 @@ namespace StarterAssets
 			if (NetObject.IsOwner == false)
             {
 				gameObject.GetComponent<PlayerInput>().enabled = false;
-				gameObject.GetComponent<CharacterController>().enabled = false;
+				//gameObject.GetComponent<CharacterController>().enabled = false;
             }
 			else
             {
 				gameObject.GetComponent<PlayerInput>().enabled = true;
-				gameObject.GetComponent<CharacterController>().enabled = true;
+				//gameObject.GetComponent<CharacterController>().enabled = true;
 			}
 		}
 
