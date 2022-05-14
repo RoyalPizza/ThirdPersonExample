@@ -65,9 +65,12 @@ public class GameMaster : MonoBehaviour
         Debug.Log("Client Disconnected: " + obj);
         if (NetworkManager.Singleton.LocalClient.PlayerObject.OwnerClientId == obj)
         {
-            Debug.Log("Unloading Scene");
-            SceneManager.UnloadSceneAsync("Playground");
-            StartCamera.gameObject.SetActive(true);
+            if (NetworkManager.Singleton.IsServer)
+            {
+                Debug.Log("Unloading Scene");
+                SceneManager.UnloadSceneAsync("Playground");
+                StartCamera.gameObject.SetActive(true);
+            }
         }
     }
 
@@ -76,8 +79,11 @@ public class GameMaster : MonoBehaviour
         Debug.Log("Client Connected: " + obj);
         if (NetworkManager.Singleton.LocalClient.PlayerObject.OwnerClientId == obj)
         {
-            Debug.Log("Loading Scene");
-            SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
+            if (NetworkManager.Singleton.IsServer)
+            {
+                Debug.Log("Loading Scene");
+                SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
+            }
         }
     }
 }
