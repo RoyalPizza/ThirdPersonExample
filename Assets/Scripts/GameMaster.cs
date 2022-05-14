@@ -62,7 +62,7 @@ public class GameMaster : MonoBehaviour
 
     private void Singleton_OnClientDisconnectCallback(ulong obj)
     {
-        Debug.Log("Client Disconnected");
+        Debug.Log("Client Disconnected: " + obj);
         if (NetworkManager.Singleton.LocalClient.PlayerObject.OwnerClientId == obj)
         {
             SceneManager.UnloadSceneAsync("Playground");
@@ -72,7 +72,7 @@ public class GameMaster : MonoBehaviour
 
     private void Singleton_OnClientConnectedCallback(ulong obj)
     {
-        Debug.Log("Client Connected");
+        Debug.Log("Client Connected: " + obj);
         if (NetworkManager.Singleton.LocalClient.PlayerObject.OwnerClientId == obj)
         {
             SceneManager.LoadScene("Playground", LoadSceneMode.Additive);
