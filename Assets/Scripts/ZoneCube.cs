@@ -37,8 +37,8 @@ public class ZoneCube : NetworkBehaviour
 
         if (NetworkManager.Singleton.IsServer)
         {
-            TorchAnimator.Play("TorchLit");
-            //TorchAnimator.SetBool("Lit", true);
+            TorchAnimator.SetBool("Lit", true);
+            //TorchAnimator.Play("TorchLit");
 
             PlayersInZone.Value += 1;
         }
