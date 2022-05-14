@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ZoneCube : NetworkBehaviour
 {
-    private NetworkVariable<int> PlayersInZoneTempName = new NetworkVariable<int>();
+    public NetworkVariable<int> PlayersInZoneTempName = new NetworkVariable<int>();
     public Animator TorchAnimator;
 
     private void Start()
@@ -18,14 +18,14 @@ public class ZoneCube : NetworkBehaviour
 
     private void Update()
     {
-        StyleCube();
-        UpdateText();
+        //StyleCube();
+        //UpdateText();
     }
 
     public void OnPlayersInZoneChanged(int previous, int current)
     {
-        //StyleCube();
-        //UpdateText();
+        StyleCube();
+        UpdateText();
     }
 
     private void OnTriggerEnter(Collider other)
